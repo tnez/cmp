@@ -119,6 +119,7 @@ class CMPGUI( PipelineConfiguration ):
                         Item('active_fiberfilter', label = 'Fiber Filtering', tooltip = 'applies filtering operation to the fibers'),
                         Item('active_connectome', label = 'Connectome Creation', tooltip= 'creates the connectivity matrices'),
                         # Item('active_statistics', label = 'Statistics'),
+                        Item('active_rsfmri', label = 'Resting-state fMRI', tooltip= 'creates resting state connectivity matrices'),
                         Item('active_cffconverter', label = 'CFF Converter', tooltip='converts processed files to a connectome file'),
                         Item('skip_completed_stages', label = 'Skip Previously Completed Stages:'),
                         label="Stages"     
@@ -325,6 +326,16 @@ class CMPGUI( PipelineConfiguration ):
         label = "Connectome Creation",
         )
 
+    rsfmri_group = Group(
+        VGroup(
+               Item('parcellation_scheme', label="Used Parcellation Scheme"),
+               show_border = True,
+               enabled_when = "active_rsfmri"
+            ),
+        visible_when = "active_rsfmri",
+        label = "rsfMRI",
+        )
+
     cffconverter_group = Group(
         VGroup(
                Item('cff_fullnetworkpickle', label="All connectomes"),
@@ -375,6 +386,7 @@ class CMPGUI( PipelineConfiguration ):
               tractography_group,
               fiberfilter_group,
               connectioncreation_group,
+              rsfmri_group,
               cffconverter_group,
               configuration_group,
               orientation= 'horizontal',

@@ -50,6 +50,7 @@ def create_folders():
         gconf.get_rawt1(),
         gconf.get_raw_diffusion(),
         gconf.get_cmp_scalars(),
+        gconf.get_cmp_fmri(),
         gconf.get_cmp_matrices(),
         gconf.get_nifti_trafo(),
         gconf.get_diffusion_metadata(),

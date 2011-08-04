@@ -68,7 +68,7 @@ class PipelineConfiguration(traits.HasTraits):
     # dicom converter
     do_convert_diffusion = traits.Bool(True)
     do_convert_T1 = traits.Bool(True)
-    do_convert_T2 = traits.Bool(True)
+    do_convert_T2 = traits.Bool(False)
     
     # DEPRECATED:
     subject_raw_glob_diffusion = traits.Str( "*.*" )
@@ -99,6 +99,7 @@ class PipelineConfiguration(traits.HasTraits):
     active_fiberfilter = traits.Bool(False)
     active_connectome = traits.Bool(False)
     active_statistics = traits.Bool(False)
+    active_rsfmri = traits.Bool(False)
     active_cffconverter = traits.Bool(False)
     skip_completed_stages = traits.Bool(False)
 
@@ -176,7 +177,7 @@ class PipelineConfiguration(traits.HasTraits):
         
         if parcel == "Lausanne2008":
             return {
-                'scale33' : {'number_of_regions' : 82,
+                'scale33' : {'number_of_regions' : 83,
                                         # contains name, url, color, freesurfer_label, etc. used for connection matrix
                                         'node_information_graphml' : op.join(self.get_lausanne_parcellation_path('resolution83'), 'resolution83.graphml'),
                                         # scalar node values on fsaverage? or atlas?
@@ -367,6 +368,8 @@ class PipelineConfiguration(traits.HasTraits):
             pat = self.get_rawt1()
         elif modality == 'T2':
             pat = self.get_rawt2()
+        elif modality == 'fMRI':
+            pat = self.get_rawrsfmri()
 
         # discover files with *.* and *
         difiles = sorted( glob(op.join(pat, '*.*')) + glob(op.join(pat, '*')) )
@@ -379,6 +382,10 @@ class PipelineConfiguration(traits.HasTraits):
             raise Exception('Could not find any DICOM files in folder %s' % pat )
 
         return difiles
+
+    def get_rawrsfmri(self):
+        """ Get raw functional MRI path for subject """
+        return op.join(self.get_rawdata(), 'fMRI')
 
     def get_rawt1(self):
         """ Get raw structural MRI T1 path for subject """
@@ -456,7 +463,10 @@ class PipelineConfiguration(traits.HasTraits):
         return op.join(self.get_cmp(), 'scalars')
         
     def get_cmp_matrices(self):
-        return op.join(self.get_cmp_fibers(), 'matrices')  
+        return op.join(self.get_cmp_fibers(), 'matrices')
+
+    def get_cmp_fmri(self):
+        return op.join(self.get_cmp(), 'fMRI')
     
     def get_cmp_tracto_mask(self):
         return op.join(self.get_cmp_fsout(), 'HR')
