@@ -42,6 +42,9 @@ import stages.connectionmatrix.creatematrix as connectionmatrix
 # STATISTICS
 import stages.stats.fiber_statistics as fiberstatistics
 
+# rsfMRI analysis
+import stages.rsfmri.correlation as fmrianalysis
+
 # CFF CONVERTER
 import stages.converter.cffconverter as cffconverter
 

@@ -25,7 +25,7 @@ def setup_pipeline_status(cobj):
                (cmp.tractography, cobj.active_tractography),
                (cmp.fiberfilter, cobj.active_fiberfilter),
                (cmp.connectionmatrix, cobj.active_connectome),
-               (cmp.rsfmri, cobj.active_rsfmri),
+               (cmp.fmrianalysis, cobj.active_rsfmri),
               # (cmp.fiberstatistics, cobj.active_statistics),               
                (cmp.cffconverter, cobj.active_cffconverter) ]
     
