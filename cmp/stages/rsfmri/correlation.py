@@ -7,6 +7,7 @@ import sys
 from time import time
 from ...logme import *
 import nibabel as nib
+import numpy as np
 
 def fmri2nifti_unpack():
     """ convert DICOM to NIFTI
@@ -38,15 +39,11 @@ def mean_fmri():
     """ compute mean fMRI
     """
     nifti_dir = op.join(gconf.get_nifti())
-
-    # compute mean
-    a = nib.load( op.join(nifti_dir, 'fMRI.nii.gz') )
-    ad = a.get_data()
-    hdr = a.get_hdr()
-
-    amean = ad.mean( axis = 3 )
-
-    nib.save( op.join(nifti_dir, 'meanfMRI.nii.gz'), nib.Nifti1Image( amean, a.get_affine(), hdr ) )
+    param = ''
+    flirt_cmd = 'fslmaths %s -Tmean %s' % (
+            op.join(gconf.get_nifti(), 'fMRI_mcf.nii.gz'),
+            op.join(gconf.get_nifti(), 'meanfMRI.nii.gz'))
+    runCmd(flirt_cmd, log)
 
     
 def register_t1_to_meanfmri():
@@ -70,9 +67,10 @@ def apply_registration_roi_to_fmean():
     param = '-interp nearestneighbour'
     for s in gconf.parcellation.keys():
         outfile = op.join(gconf.get_cmp_fmri(), 'ROI_HR_th-TO-fMRI-%s.nii.gz' % s)
+        infile = op.join(gconf.get_cmp_tracto_mask(), s, 'ROI_HR_th.nii.gz')
         flirt_cmd = 'flirt -applyxfm -init %s -in %s -ref %s -out %s %s' % (
                     outmat,
-                    roifile,
+                    infile,
                     op.join(gconf.get_nifti(), 'meanfMRI.nii.gz'),
                     outfile,
                     param)
@@ -88,9 +86,9 @@ def apply_registration_roi_to_fmean():
     
 
 def average_rsfmri():
-    """ t[a==1].mean(axis=0): matrix output: nrROI x T save matrix in CMP/fMRI
+    """ compute the average signal for each GM ROI.
     """
-    fdata = nib.load( op.join(gconf.get_nifti(), 'fMRI.nii.gz') ).get_data()
+    fdata = nib.load( op.join(gconf.get_nifti(), 'fMRI_mcf.nii.gz') ).get_data()
 
     tp = fdata.shape[3]
 
@@ -103,9 +101,9 @@ def average_rsfmri():
         odata = np.zeros( (N,tp), dtype = np.float32 )
 
         for i in range(1,N+1):
-            fdata[i,:] = fdata[mask==i].mean( axis = 0 )
+            odata[i-1,:] = fdata[mask==i].mean( axis = 0 )
 
-        np.save( op.join(gconf.get_cmp_fmri(), 'averageTimeseries_%s.npy' % s) )
+        np.save( op.join(gconf.get_cmp_fmri(), 'averageTimeseries_%s.npy' % s), odata )
 
 
 def run(conf):
@@ -124,8 +122,8 @@ def run(conf):
     log.info("resting state fMRI stage")
     log.info("========================")
 
-    fmri2nifti_unpack()
-    ralign()
+    #fmri2nifti_unpack()
+    #ralign()
     mean_fmri()
     register_t1_to_meanfmri()
     apply_registration_roi_to_fmean()
@@ -139,6 +137,7 @@ def run(conf):
 
 def declare_inputs(conf):
     """Declare the inputs to the stage to the PipelineStatus object"""
+    stage = conf.pipeline_status.GetStage(__name__)
 
     # require dicom files
     first = conf.get_dicomfiles( 'fMRI')[0]
