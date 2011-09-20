@@ -26,7 +26,7 @@ def fmri2nifti_unpack():
                                  op.join(nifti_dir, 'fMRI.nii.gz'))
         runCmd(diff_cmd, log)
 
-def ralign():
+def realign():
     """ realign volume with mc flirt
     """
     param = ''
@@ -92,14 +92,17 @@ def average_rsfmri():
 
     tp = fdata.shape[3]
 
+    # loop throughout all the resolutions ('scale33', ..., 'scale500')
     for s in gconf.parcellation.keys():
         infile = op.join(gconf.get_cmp_fmri(), 'ROI_HR_th-TO-fMRI-%s.nii.gz' % s)
         mask = nib.load( infile ).get_data().astype( np.uint32 )
 
+        # N: number of ROIs for current resolution
         N = mask.max()
         # matrix number of rois vs timepoints
         odata = np.zeros( (N,tp), dtype = np.float32 )
 
+        # loop throughout all the ROIs (current resolution)
         for i in range(1,N+1):
             odata[i-1,:] = fdata[mask==i].mean( axis = 0 )
 
@@ -122,8 +125,8 @@ def run(conf):
     log.info("resting state fMRI stage")
     log.info("========================")
 
-    #fmri2nifti_unpack()
-    #ralign()
+    fmri2nifti_unpack()
+    realign()
     mean_fmri()
     register_t1_to_meanfmri()
     apply_registration_roi_to_fmean()
