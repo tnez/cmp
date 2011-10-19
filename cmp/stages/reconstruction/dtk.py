@@ -278,7 +278,7 @@ def compute_scalars(odf_out_path, prefix):
         log.error("Unable to calculate GFA map!")
     else:
         # copy dsi_gfa.nii.gz to scalar folder for processing with connectionmatrix
-        src = op.join(odf_out_path, "dsi_gfa.nii")
+        src = op.join(odf_out_path, prefix+'_gfa.nii')
         dst = op.join(gconf.get_cmp_scalars(), prefix+'_gfa.nii.gz')
 
         log.info("Gzip compress...")
