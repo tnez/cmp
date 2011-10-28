@@ -9,7 +9,6 @@
 
 import sys, os, os.path as op
 import logging, subprocess
-import time
 
 def getLog(fpath):
     logFormat = "%(levelname)-8s : %(asctime)s : %(name)-10s : %(message)s"
@@ -95,14 +94,16 @@ def runCmd( cmd, log ):
                                     stderr = subprocess.STDOUT )
         
         _localLog.debug( "Running: %s"%( cmd, ) )
-    
+        
+        from time import sleep
+
         while process.returncode == None:
             # None means process is still running
     
             # need to poll the process once so the returncode
             # gets set (see docs)
             process.poll()
-            time.sleep ( 1.0 / 1000.0 ); # sleep for 1ms
+            sleep ( 10.0 / 1000.0 ); # sleep for 10ms
             try:
                 line = fifo.readline().strip()
             except:
