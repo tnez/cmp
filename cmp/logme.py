@@ -9,6 +9,7 @@
 
 import sys, os, os.path as op
 import logging, subprocess
+import time
 
 def getLog(fpath):
     logFormat = "%(levelname)-8s : %(asctime)s : %(name)-10s : %(message)s"
@@ -101,7 +102,7 @@ def runCmd( cmd, log ):
             # need to poll the process once so the returncode
             # gets set (see docs)
             process.poll()
-    
+            time.sleep ( 1.0 / 1000.0 ); # sleep for 1ms
             try:
                 line = fifo.readline().strip()
             except:
