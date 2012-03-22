@@ -134,7 +134,8 @@ Project configuration and setup
 
 Steps to do before executing the pipeline
 
-#. Create the folder structure for your project for DSI data. For DTI data, rename the folder DSI to DTI.::
+#. Create the folder structure for your project for DSI data. For DTI data, rename the folder DSI to DTI. For QBALL data, rename the folder DSI to QBALL. 
+If you have resting state fMRI data, create a new folder 'fMRI' in RAWDATA.::
 
 	├── myproject
 	│   ├── control001
@@ -142,10 +143,11 @@ Steps to do before executing the pipeline
 	│   │       ├── RAWDATA
 	│   │       │   ├── DSI
 	│   │       │   ├── T1
-	│   │       │   └── T2
+	│   │       │   ├── T2
+	│   │       │   └── fMRI
 
-#. Copy the Diffusion / MPRAGE (DSI, DTI, T1, T2) images (DICOM series) in the corresponding folders.
-   The T2 images are optional but they improve the registration of the data.
+#. Copy the Diffusion / MPRAGE (DSI, DTI, QBALL, T1, T2, fMRI) images (DICOM series) in the corresponding folders.
+   The T2 images are optional but they improve the registration of the data. The fMRI images are optional.
 
 #. Run the Connectome Mapper and configure it for your project::
 
@@ -157,7 +159,9 @@ Steps to do before executing the pipeline
 	│   ├── control001
 	│   │   └── tp1
 	│   │       ├── CMP
+	│   │       │   ├── cff
 	│   │       │   ├── fibers
+	│   │       │   ├── fMRI
 	│   │       │   ├── fs_output
 	│   │       │   ├── raw_diffusion
 	│   │       │   └── scalars
@@ -165,10 +169,14 @@ Steps to do before executing the pipeline
 	│   │       │   └── mri
 	│   │       ├── LOG
 	│   │       ├── NIFTI
+	│   │       │   ├── diffusion_metadata
+	│   │       │   ├── transformations
+	│   │       │   └── wm_correction
 	│   │       ├── RAWDATA
 	│   │       │   ├── DSI
 	│   │       │   ├── T1
-	│   │       │   └── T2
+	│   │       │   ├── T2
+	│   │       │   └── fMRI
 	│   │       └── STATS
 
 All the files for your subject will be stored in this folder structure.

@@ -260,7 +260,25 @@ def t22nifti_diff_unpack():
         log.info("Dataset 'T2.nii.gz' successfully created!")
 
     log.info("[ DONE ]")
-    
+
+def fmri2nifti_diff_unpack():
+    """ convert DICOM to NIFTI
+    """
+    nifti_dir = op.join(gconf.get_nifti())
+    fmri_dir = gconf.get_rawrsfmri()
+
+    log.info("Convert rsfMRI ...")
+    # check if .nii.gz / .nii.gz is already available
+    if op.exists(op.join(fmri_dir, 'fMRI.nii.gz')):
+        shutil.copy(op.join(fmri_dir, 'fMRI.nii.gz'), op.join(nifti_dir, 'fMRI.nii.gz'))
+    else:
+        # read data
+        first = gconf.get_dicomfiles('fMRI')[0]
+        diff_cmd = 'diff_unpack %s %s' % (first,
+                                 op.join(nifti_dir, 'fMRI.nii.gz'))
+        runCmd(diff_cmd, log)
+
+    log.info("[ DONE ]")
     
 def reorient_t1(model):
     nifti_dir = op.join(gconf.get_nifti())
@@ -316,7 +334,7 @@ def run(conf):
     """
     # setting the global configuration variable
     globals()['gconf'] = conf
-    globals()['log'] = gconf.get_logger() 
+    globals()['log'] = gconf.get_logger()
     start = time()
     
     log.info("DICOM -> NIFTI conversion")
@@ -347,6 +365,9 @@ def run(conf):
     if gconf.do_convert_T2:
         t22nifti_diff_unpack()
         reorient_t2(gconf.diffusion_imaging_model)
+
+    if gconf.do_convert_fMRI:
+        fmri2nifti_diff_unpack()
 
     log.info("Module took %s seconds to process." % (time()-start))
 
@@ -414,10 +435,13 @@ def declare_outputs(conf):
     if conf.do_convert_diffusion:
         conf.pipeline_status.AddStageOutput(stage, nifti_dir, 'Diffusion_b0_resampled.nii.gz', 'diffusion-resampled-nii-gz')
         
-    if conf.do_convert_T1:                    
+    if conf.do_convert_T1:
         conf.pipeline_status.AddStageOutput(stage, nifti_dir, 'T1.nii.gz', 't1-nii-gz')
     
-    if conf.do_convert_T2: 
+    if conf.do_convert_T2:
         conf.pipeline_status.AddStageOutput(stage, nifti_dir, 'T2.nii.gz', 't2-nii-gz')
+
+    if conf.do_convert_fMRI:
+        conf.pipeline_status.AddStageOutput(stage, nifti_dir, 'fMRI.nii.gz', 'fMRI-nii-gz')
         
        

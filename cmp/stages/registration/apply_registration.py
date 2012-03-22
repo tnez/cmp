@@ -39,7 +39,9 @@ def apply_nlin_registration():
     # warp fsmask_1mm and parcellations    
     warp_files = ['fsmask_1mm.nii.gz']
     for park in gconf.parcellation.keys():
-        warp_files.append(op.join(park, 'ROI_HR_th.nii.gz'))
+        warp_files.append(op.join(park, 'ROIv_HR_th.nii.gz'))
+        if gconf.parcellation_scheme == "Lausanne2008":
+            warp_files.append(op.join(park, 'ROI_HR_th.nii.gz'))
     
     for infile in warp_files:
         log.info("Warp file: %s" % infile)
@@ -90,7 +92,9 @@ def apply_lin_registration():
     
     warp_files = ['fsmask_1mm.nii.gz']
     for park in gconf.parcellation.keys():
-        warp_files.append(op.join(park, 'ROI_HR_th.nii.gz'))
+        warp_files.append(op.join(park, 'ROIv_HR_th.nii.gz'))
+        if gconf.parcellation_scheme == "Lausanne2008":
+            warp_files.append(op.join(park, 'ROI_HR_th.nii.gz'))
     
     for infile in warp_files:
         log.info("Warp file: %s" % infile)
@@ -130,7 +134,7 @@ def run(conf):
     
     if gconf.registration_mode == 'Nonlinear':
         apply_nlin_registration()
-    elif gconf.registration_mode == 'Linear':
+    elif gconf.registration_mode == 'Linear' or gconf.registration_mode == 'BBregister':
         apply_lin_registration()
     
     log.info("Module took %s seconds to process." % (time()-start))
@@ -144,19 +148,25 @@ def declare_inputs(conf):
     """Declare the inputs to the stage to the PipelineStatus object"""
     
     stage = conf.pipeline_status.GetStage(__name__)
-    nifti_trafo_dir = conf.get_nifti_trafo()    
+    nifti_trafo_dir = conf.get_nifti_trafo()
+    nifti_dir = conf.get_nifti()
     tracto_masks_path = conf.get_cmp_tracto_mask()
-    
     
     if conf.registration_mode == 'Nonlinear':
         conf.pipeline_status.AddStageInput(stage, nifti_trafo_dir, 'T1-TO-T2.mat', 'T1-TO-T2-mat')
+        conf.pipeline_status.AddStageInput(stage, nifti_dir, 'T2-TO-b0_warp.nii.gz', 'T2-TO-b0_warp-nii-gz')
     
     elif conf.registration_mode == 'Linear':
         conf.pipeline_status.AddStageInput(stage, nifti_trafo_dir, 'T1-TO-b0.mat', 'T1-TO-b0-mat')
         
-    conf.pipeline_status.AddStageInput(stage, tracto_masks_path, 'fsmask_1mm.nii.gz', 'fsmask_1mm-nii-gz')        
+    conf.pipeline_status.AddStageInput(stage, tracto_masks_path, 'fsmask_1mm.nii.gz', 'fsmask_1mm-nii-gz')
+    conf.pipeline_status.AddStageInput(stage, nifti_dir, 'Diffusion_b0_resampled.nii.gz', 'Diffusion_b0_resampled-nii-gz')
     for p in conf.parcellation.keys():
-        conf.pipeline_status.AddStageInput(stage, op.join(tracto_masks_path, p), 'ROI_HR_th.nii.gz', 'ROI_HR_th_%s-nii-gz' % (p))    
+        conf.pipeline_status.AddStageInput(stage, op.join(tracto_masks_path, p), 'ROIv_HR_th.nii.gz', 'ROIv_HR_th_%s-nii-gz' % (p))
+
+    if conf.parcellation_scheme == "Lausanne2008":
+        for p in conf.parcellation.keys():
+            conf.pipeline_status.AddStageInput(stage, op.join(tracto_masks_path, p), 'ROI_HR_th.nii.gz', 'ROI_HR_th_%s-nii-gz' % (p))
 
     
 def declare_outputs(conf):
@@ -167,7 +177,9 @@ def declare_outputs(conf):
             
     conf.pipeline_status.AddStageOutput(stage, tracto_masks_path_out, 'fsmask_1mm.nii.gz', 'fsmask_1mm-nii-gz')            
     for p in conf.parcellation.keys():
-        conf.pipeline_status.AddStageOutput(stage, op.join(tracto_masks_path_out, p), 'ROI_HR_th.nii.gz', 'ROI_HR_th_%s-nii-gz' % (p))
-                
-        
-    
+        conf.pipeline_status.AddStageOutput(stage, op.join(tracto_masks_path_out, p), 'ROIv_HR_th.nii.gz', 'ROIv_HR_th_%s-nii-gz' % (p))
+
+    if conf.parcellation_scheme == "Lausanne2008":
+        for p in conf.parcellation.keys():
+            conf.pipeline_status.AddStageOutput(stage, op.join(tracto_masks_path_out, p), 'ROI_HR_th.nii.gz', 'ROI_HR_th_%s-nii-gz' % (p))
+                    
